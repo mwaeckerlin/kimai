@@ -17,7 +17,7 @@ for ((i=0; i<20; ++i)); do
     sleep 1
 done
 
-if ! mysqlshow -u root --password=${SQL_ENV_MYSQL_ROOT_PASSWORD} -h sql kimai; then
+if ! mysqlshow -u root --password=${MYSQL_ENV_MYSQL_ROOT_PASSWORD} -h mysql kimai; then
     echo "**** Setup Database (first run)"
     MY_SQL_PASSWD=$(pwgen -s 16 1)
     mysql -u root --password=${MYSQL_ENV_MYSQL_ROOT_PASSWORD} -h mysql -e "create database kimai default character set utf8 collate utf8_bin"
