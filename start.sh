@@ -17,11 +17,11 @@ for ((i=0; i<20; ++i)); do
     sleep 1
 done
 
+MYSQL_PASSWD=${MYSQL_PASSWD:-$(pwgen -s 16 1)}
 if ! mysqlshow -u root --password=${MYSQL_ENV_MYSQL_ROOT_PASSWORD} -h mysql kimai; then
     echo "**** Setup Database (first run)"
-    MY_SQL_PASSWD=$(pwgen -s 16 1)
     mysql -u root --password=${MYSQL_ENV_MYSQL_ROOT_PASSWORD} -h mysql -e "create database kimai default character set utf8 collate utf8_bin"
-    mysql -u root --password=${MYSQL_ENV_MYSQL_ROOT_PASSWORD} -h mysql -e "grant all privileges on *.* to kimai@'%' identified by '${MY_SQL_PASSWD}'"
+    mysql -u root --password=${MYSQL_ENV_MYSQL_ROOT_PASSWORD} -h mysql -e "grant all privileges on *.* to kimai@'%' identified by '${MYSQL_PASSWD}'"
 fi
 if test -d ${KIMAI_ROOT}/installer; then
     cat > ${KIMAI_ROOT}/includes/autoconf.php <<EOF
@@ -29,7 +29,7 @@ if test -d ${KIMAI_ROOT}/installer; then
 \$server_hostname = "mysql";
 \$server_database = "kimai";
 \$server_username = "kimai";
-\$server_password = "${MY_SQL_PASSWD}";
+\$server_password = "${MYSQL_PASSWD}";
 \$server_conn     = "mysql";
 \$server_type     = "";
 \$server_prefix   = "kimai_";
@@ -45,7 +45,7 @@ EOF
     pkill nginx
     service php5-fpm stop
     echo "Kimai Configuration Parameter:"
-    echo " → host: mysql, user: kimai, password: ${MY_SQL_PASSWD}, table: kimai"
+    echo " → host: mysql, user: kimai, password: ${MYSQL_PASSWD}, table: kimai"
 fi
 
 service php5-fpm start && nginx
