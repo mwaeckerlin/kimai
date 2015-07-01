@@ -17,6 +17,8 @@ RUN rm /etc/nginx/sites-available/* /etc/nginx/sites-enabled/*
 ADD kimai.conf /etc/nginx/sites-available/kimai.conf
 RUN ln -s /etc/nginx/sites-available/kimai.conf /etc/nginx/sites-enabled/
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
+
 EXPOSE 80
+VOLUME /etc/kimai
 ADD start.sh /start.sh
 CMD /start.sh

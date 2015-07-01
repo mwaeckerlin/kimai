@@ -24,7 +24,8 @@ if ! mysqlshow -u root --password=${SQL_ENV_MYSQL_ROOT_PASSWORD} -h sql kimai; t
     mysql -u root --password=${MYSQL_ENV_MYSQL_ROOT_PASSWORD} -h mysql -e "grant all privileges on *.* to kimai@'%' identified by '${MY_SQL_PASSWD}'"
 fi
 if test -d ${KIMAI_ROOT}/installer; then
-    cat > ${KIMAI_ROOT}/includes/autoconf.php <<EOF
+    rm ${KIMAI_ROOT}/includes/autoconf.php
+    cat > /etc/kimai/autoconf.php <<EOF
 <?php
 \$server_hostname = "mysql";
 \$server_database = "kimai";
@@ -37,6 +38,7 @@ if test -d ${KIMAI_ROOT}/installer; then
 \$password_salt   = "$(pwgen -s 21 1)";
 ?>
 EOF
+    ln -s /etc/kimai/autoconf.php ${KIMAI_ROOT}/includes/autoconf.php
     service php5-fpm start
     nginx &
     sleep 2
