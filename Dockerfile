@@ -10,8 +10,9 @@ WORKDIR /tmp
 RUN apt-get update -y
 RUN apt-get install -y wget unzip nginx php5-fpm php5-mysql php5-ldap mysql-client pwgen nmap
 RUN wget -qO /tmp/kimai.zip "${KIMAI_LINK}"
-RUN unzip /tmp/kimai.zip -d /var/www/
-RUN mkdir -p ${KIMAI_NEED_WRITE} || true
+RUN mkdir -p ${KIMAI_NEED_WRITE}
+RUN unzip /tmp/kimai.zip -d /var/www/kimai
+#RUN mkdir -p ${KIMAI_NEED_WRITE} || true
 RUN chown -R www-data.www-data ${KIMAI_NEED_WRITE}
 RUN rm /etc/nginx/sites-available/* /etc/nginx/sites-enabled/*
 ADD kimai.conf /etc/nginx/sites-available/kimai.conf
