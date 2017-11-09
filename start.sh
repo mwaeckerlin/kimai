@@ -9,22 +9,19 @@ if [ -z "${MYSQL_ENV_MYSQL_ROOT_PASSWORD}" -o \
 fi
 
 # wait for mysql to become ready
-for ((i=0; i<20; ++i)); do
+mysqlstatus=0
+for ((i=0; i<300; ++i)); do
     if nmap -p ${MYSQL_PORT_3306_TCP_PORT} ${MYSQL_PORT_3306_TCP_ADDR} \
-        | grep -q ${MYSQL_PORT_3306_TCP_PORT}'/tcp open'; then
+            | grep -q ${MYSQL_PORT_3306_TCP_PORT}'/tcp open'; then
+        mysqlstatus=1
         break;
     fi
     sleep 1
 done
+test $mysqlstatus -eq 1
 
-MYSQL_PASSWD=${MYSQL_PASSWD:-$(pwgen -s 16 1)}
-if ! mysqlshow -u root --password=${MYSQL_ENV_MYSQL_ROOT_PASSWORD} -h mysql kimai; then
-    echo "**** Setup Database (first run)"
-    mysql -u root --password=${MYSQL_ENV_MYSQL_ROOT_PASSWORD} -h mysql -e "create database kimai default character set utf8 collate utf8_bin"
-    mysql -u root --password=${MYSQL_ENV_MYSQL_ROOT_PASSWORD} -h mysql -e "grant all privileges on *.* to kimai@'%' identified by '${MYSQL_PASSWD}'"
-fi
-if test -d ${KIMAI_ROOT}/installer; then
-    #rm ${KIMAI_ROOT}/includes/autoconf.php
+if ! test -e /etc/kimai/autoconf.php; then
+    MYSQL_PASSWD=${MYSQL_PASSWD:-$(pwgen -s 16 1)}
     cat > /etc/kimai/autoconf.php <<EOF
 <?php
 \$server_hostname = "mysql";
@@ -38,18 +35,28 @@ if test -d ${KIMAI_ROOT}/installer; then
 \$password_salt   = "$(pwgen -s 21 1)";
 ?>
 EOF
-    chown -R www-data.www-data ${KIMAI_NEED_WRITE}
     chown -R www-data.www-data /etc/kimai
+    ! test -e ${KIMAI_ROOT}/includes/autoconf.php || \
+        rm ${KIMAI_ROOT}/includes/autoconf.php
     ln -s /etc/kimai/autoconf.php ${KIMAI_ROOT}/includes/autoconf.php
-    service php5-fpm start
+    echo "**** Setup Database (first run)"
+    mysql -u root --password=${MYSQL_ENV_MYSQL_ROOT_PASSWORD} -h mysql -e "create database kimai default character set utf8 collate utf8_bin"
+    mysql -u root --password=${MYSQL_ENV_MYSQL_ROOT_PASSWORD} -h mysql -e "grant all privileges on *.* to kimai@'%' identified by '${MYSQL_PASSWD}'"
+else
+    MYSQL_PASSWD=$(sed -n 's, *\$server_password = "\(.*\)";.*,\1,p' /etc/kimai/autoconf.php)
+fi
+test -d /run/php || mkdir -p /run/php
+if test -d ${KIMAI_ROOT}/installer; then
+    chown -R www-data.www-data ${KIMAI_ROOT}
+    php-fpm7.0
     nginx &
     sleep 2
     wget -O- http://localhost/installer/install.php?accept=1
     rm -r ${KIMAI_ROOT}/installer
     pkill nginx
-    service php5-fpm stop
+    pkill php-fpm
     echo "Kimai Configuration Parameter:"
     echo " → host: mysql, user: kimai, password: ${MYSQL_PASSWD}, table: kimai"
 fi
 
-service php5-fpm start && nginx
+php-fpm7.0 && nginx

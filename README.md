@@ -6,9 +6,9 @@ With separate MySQL Container.
 
 Run:
 ```
-        docker run --volume /etc/kimai --name kimai-volumes mysql true
-        docker run -d -e MYSQL_ROOT_PASSWORD=$(pwgen -s 16 1) --name kimai-mysql --volumes-from kimai-volumes mysql
-        docker run -d --name kimai --link kimai-mysql:mysql --volumes-from kimai-volumes -p 80:80 mwaeckerlin/kimai:0.9.3
+        docker run -d --restart unless-stopped --volume /etc/kimai --name kimai-volumes mysql sleep infinity
+        docker run -d --restart unless-stopped -e MYSQL_ROOT_PASSWORD=$(pwgen -s 16 1) --name kimai-mysql --volumes-from kimai-volumes mysql
+        docker run -d --restart unless-stopped --name kimai --link kimai-mysql:mysql --volumes-from kimai-volumes -p 80:80 mwaeckerlin/kimai
 ```
 
 Got to http://localhost and login with username `admin` and password `changeme`
@@ -18,13 +18,7 @@ Note: Don't forget to change the admin password!
 # Build
 
 ```
-docker build --rm -t mwaeckerlin/kimai:0.9.3 .
+docker build --rm -t mwaeckerlin/kimai .
 ```
 
-# Changelog
-
-## 0.9.3
-
-* using Kimai 0.9.3
-* installed PHP LDAP module
 
