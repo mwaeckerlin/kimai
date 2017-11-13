@@ -8,8 +8,7 @@ ENV KIMAI_ROOT /var/www/kimai
 #/{compile,extensions/ki_timesheets/compile,extensions/ki_adminpanel/compile,extensions/ki_expenses/compile,extensions/ki_export/compile,extensions/ki_budget/compile,extensions/ki_invoice/compile,temporary,includes/autoconf.php}
 
 WORKDIR /tmp
-RUN apt-get update -y
-RUN apt-get install -y wget unzip nginx-full php-fpm php-mysql php-ldap php-xml mysql-client pwgen nmap
+RUN apt-get update -y && apt-get install -y wget unzip nginx-full php-xml php-fpm php-mysql php-ldap mysql-client pwgen nmap
 RUN if test -n "${KIMAI_LINK}"; then wget -qO /tmp/kimai.zip "${KIMAI_LINK}"; fi
 RUN if test -z "${KIMAI_LINK}"; then wget -qO /tmp/kimai.zip https://github.com$(wget -qO- https://github.com/kimai/kimai/releases/latest | sed -n 's,.*<a href="\([^"]*kimai_[^"]*\.zip\)".*,\1,p'); fi
 RUN mkdir -p ${KIMAI_ROOT}
