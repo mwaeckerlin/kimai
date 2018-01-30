@@ -8,6 +8,13 @@ if [ -z "${MYSQL_ENV_MYSQL_ROOT_PASSWORD}" -o \
     exit 1
 fi
 
+if [ -z "${LANG}" ]; then
+    LANG_639_1="de"
+    echo "LANG not set, defaulting to ${LANG_639_1}" 1>&2
+else
+    LANG_639_1=${LANG:0:2}
+fi
+
 # wait for mysql to become ready
 mysqlstatus=0
 for ((i=0; i<300; ++i)); do
@@ -31,7 +38,7 @@ if ! test -e /etc/kimai/autoconf.php; then
 \$server_conn     = "mysql";
 \$server_type     = "";
 \$server_prefix   = "kimai_";
-\$language        = "de";
+\$language        = "${LANG}";
 \$password_salt   = "$(pwgen -s 21 1)";
 ?>
 EOF
